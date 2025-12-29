@@ -11,9 +11,32 @@ import UserManagement from './pages/UserManagement';
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ children, adminOnly }) => {
   const { user, role, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white' }}>
+      <h2>Initializing StockPro...</h2>
+    </div>
+  );
+
   if (!user) return <Navigate to="/login" />;
-  if (adminOnly && role !== 'admin') return <Navigate to="/" />;
+
+  // If user is logged in but has no role yet (manual setup pending)
+  if (!role) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', textAlign: 'center', padding: '2rem' }}>
+        <div>
+          <h2 style={{ color: '#ef4444' }}>Access Pending</h2>
+          <p style={{ marginTop: '1rem', color: '#94a3b8' }}>Your account exists, but an Admin has not assigned your role yet.</p>
+          <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', opacity: 0.7 }}>UID: {user.uid}</p>
+          <button onClick={() => window.location.reload()} className="btn btn-primary" style={{ marginTop: '2rem' }}>Check Again</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect staff away from admin-only pages
+  if (adminOnly && role !== 'admin') {
+    return <Navigate to="/inventory" />;
+  }
 
   return <Layout>{children}</Layout>;
 };
