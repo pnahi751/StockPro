@@ -7,7 +7,6 @@ import {
     query,
     orderBy,
     limit,
-    DocumentSnapshot,
     QueryDocumentSnapshot,
     Transaction
 } from 'firebase/firestore';
@@ -69,9 +68,11 @@ export const ProductService = {
         if (isAdmin) {
             const finSnaps = await getDocs(collection(db, 'productFinancials'));
             const finMap: Record<string, any> = {};
-            finSnaps.docs.forEach((d: QueryDocumentSnapshot) => finMap[d.id] = d.data());
+            finSnaps.docs.forEach((d: QueryDocumentSnapshot) => {
+                finMap[d.id] = d.data();
+            });
 
-            return products.map(p => ({
+            return products.map((p: Product) => ({
                 ...p,
                 financials: finMap[p.id] || null
             }));
@@ -112,7 +113,9 @@ export const AnalyticsService = {
         const financialsSnap = await getDocs(collection(db, 'productFinancials'));
 
         const finMap: Record<string, any> = {};
-        financialsSnap.docs.forEach((doc: QueryDocumentSnapshot) => finMap[doc.id] = doc.data());
+        financialsSnap.docs.forEach((doc: QueryDocumentSnapshot) => {
+            finMap[doc.id] = doc.data();
+        });
 
         let totalCost = 0;
         let totalSale = 0;

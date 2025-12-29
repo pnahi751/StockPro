@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { UserRole } from '../types';
+import type { UserRole } from '../types';
 
 interface AuthContextType {
     user: FirebaseUser | null;
@@ -24,12 +25,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
             if (fbUser) {
                 // Fetch role from Firestore
                 const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
                 if (userDoc.exists()) {
-                    setRole(userDoc.data().role);
+                    setRole(userDoc.data().role as UserRole);
                 }
                 setUser(fbUser);
             } else {
