@@ -1,0 +1,19 @@
+[build]
+  # The directory where the frontend code lives
+  base = "frontend"
+  
+  # The command to build the site
+  command = "npm run build"
+  
+  # The directory to publish (relative to base)
+  publish = "dist"
+
+[build.environment]
+  # Ensures Node.js version is consistent
+  NODE_VERSION = "20"
+
+[[redirects]]
+  # This ensures React Router (SPA) works correctly on Netlify
+  from = "/*"
+  to = "/index.html"
+  status = 200
