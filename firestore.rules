@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Check if user is Admin
+    function isAdmin() {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper: Is Authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin(); 
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Products Collection ---
+    match /products/{productId} {
+      allow read: if isAuthenticated();
+      // Only Admin can create products or delete them
+      allow create, delete: if isAdmin();
+      // Allow updates if the data matches specific constraints (e.g., stock >= 0)
+      allow update: if isAuthenticated() && request.resource.data.stockQuantity >= 0;
+    }
+
+    // --- ProductFinancials Collection (SECRET) ---
+    match /productFinancials/{productId} {
+      // STRICTLY ADMIN ONLY. 
+      // This is the "Wall". No staff member can ever read or write here.
+      allow read, write: if isAdmin();
+    }
+
+    // --- StockMovements Collection ---
+    match /stockMovements/{movementId} {
+      allow read: if isAuthenticated();
+      // Staff can create movements but cannot edit or delete history
+      allow create: if isAuthenticated();
+      allow update, delete: if false; 
+    }
+
+    // --- AuditLogs ---
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+  }
+}
